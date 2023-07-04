@@ -48,7 +48,7 @@ func NewCaptcha() *Captcha {
 }
 
 // GenerateCaptcha 生产图片验证码
-func (c *Captcha) GeteratteCaptcha() (id string, b64s string, err error) {
+func (c *Captcha) GenerateCaptcha() (id string, b64s string, err error) {
 	return c.Base64Captcha.Generate()
 }
 
