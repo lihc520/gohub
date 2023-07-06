@@ -46,7 +46,7 @@ func RandomNumber(length int) string {
 	b := make([]byte, length)
 	n, err := io.ReadAtLeast(rand.Reader, b, length)
 	if n != length {
-		panic(fmt.Sprintf("expected length %d, but got %d: %v", length, n, err))
+		panic(err)
 	}
 	for i := 0; i < len(b); i++ {
 		b[i] = table[int(b[i])%len(table)]
