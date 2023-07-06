@@ -2,10 +2,12 @@
 package verifycode
 
 import (
+	"fmt"
 	"github.com/lihc520/gohub/pkg/app"
 	"github.com/lihc520/gohub/pkg/config"
 	"github.com/lihc520/gohub/pkg/helpers"
 	"github.com/lihc520/gohub/pkg/logger"
+	"github.com/lihc520/gohub/pkg/mail"
 	"github.com/lihc520/gohub/pkg/redis"
 	"github.com/lihc520/gohub/pkg/sms"
 	"strings"
@@ -83,4 +85,31 @@ func (vc *VerifyCode) generateVerifyCode(key string) string {
 	// 将验证码及 KEY（邮箱或手机号）存放到 Redis 中并设置过期时间
 	vc.Store.Set(key, code)
 	return code
+}
+
+// SendEmail 发送邮件验证码，调用示例
+// verifycode.NewVerifyCode().SendEmail(request.Email)
+func (vc *VerifyCode) SendEmail(email string) error {
+
+	// 生成验证码
+	code := vc.generateVerifyCode(email)
+
+	// 方便本地和 API 自动测试
+	if !app.IsProduction() && strings.HasPrefix(email, config.GetString("verifycode.debug_email_suffix")) {
+		return nil
+	}
+
+	content := fmt.Sprintf("<h1>您的 Email 验证码是 %v </h1>", code)
+	// 发送邮件
+	mail.NewMailer().Send(mail.Email{
+		From: mail.From{
+			Address: config.GetString("mail.from.address"),
+			Name:    config.GetString("mail.from.name"),
+		},
+		To:      []string{email},
+		Subject: "Email 验证码",
+		HTML:    []byte(content),
+	})
+
+	return nil
 }
