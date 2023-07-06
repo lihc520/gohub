@@ -17,10 +17,10 @@ type VerifyCode struct {
 }
 
 var once sync.Once
-var internalVerifyCode *VerirfyCode
+var internalVerifyCode *VerifyCode
 
 // NewVerifyCode 单例模式获取
-func NewVerifyCode() *VerirfyCode {
+func NewVerifyCode() *VerifyCode {
 	once.Do(func() {
 		internalVerifyCode = &VerifyCode{
 			Store: &RedisStore{
