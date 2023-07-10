@@ -3,8 +3,8 @@ package redis
 
 import (
 	"context"
-	redis "github.com/go-redis/redis/v8"
 	"github.com/lihc520/gohub/pkg/logger"
+	redis "github.com/redis/go-redis/v9"
 	"sync"
 	"time"
 )
