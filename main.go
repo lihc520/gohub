@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/lihc520/gohub/app/cmd"
+	"github.com/lihc520/gohub/app/cmd/make"
 	"github.com/lihc520/gohub/bootstrap"
 	btsConfig "github.com/lihc520/gohub/config"
 	"github.com/lihc520/gohub/pkg/config"
@@ -50,6 +51,7 @@ func main() {
 		cmd.CmdServe,
 		cmd.CmdKey,
 		cmd.CmdPlay,
+		make.CmdMake,
 	)
 
 	// 配置默认运行 Web 服务
