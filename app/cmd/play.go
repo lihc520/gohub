@@ -6,7 +6,7 @@ import (
 
 var CmdPlay = &cobra.Command{
 	Use:   "play",
-	Short: "likes the Go Playgroud, but running at our application context",
+	Short: "likes the Go Playground, but running at our application context",
 	Run:   runPlay,
 }
 
