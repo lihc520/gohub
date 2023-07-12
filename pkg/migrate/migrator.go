@@ -4,8 +4,17 @@ package migrate
 import (
 	"github.com/lihc520/gohub/pkg/console"
 	"github.com/lihc520/gohub/pkg/database"
+	"github.com/lihc520/gohub/pkg/file"
+	"gorm.io/gorm"
 	"os"
 )
+
+// Migrator 数据迁移操作类
+type Migrator struct {
+	Folder   string
+	DB       *gorm.DB
+	Migrator gorm.Migrator
+}
 
 // Migrate 数据迁移操作类
 type Migration struct {
@@ -26,7 +35,7 @@ func NewMigrator() *Migrator {
 	// migrations 不存在的话就创建它
 	migrator.createMigrationsTable()
 
-	return migrtor
+	return migrator
 }
 
 // 创建 migrations 表
@@ -65,6 +74,7 @@ func (migrator *Migrator) Up() {
 			runed = true
 		}
 	}
+
 	if !runed {
 		console.Success("database is up to date.")
 	}
@@ -78,7 +88,7 @@ func (migrator *Migrator) getBatch() int {
 
 	// 取最后执行的一条迁移数据
 	lastMigration := Migration{}
-	migrator.DB.Order("id DESC").Frist(&lastMigration)
+	migrator.DB.Order("id DESC").First(&lastMigration)
 
 	// 如果有值的话，加一
 	if lastMigration.ID > 0 {
@@ -92,16 +102,16 @@ func (migrator *Migrator) readAllMigrationFiles() []MigrationFile {
 
 	// 读取 database/migrations/ 目录下的所有文件
 	// 默认是会按照文件名称进行排序
-	files, err := os.ReadFile(migrator.Folder)
+	files, err := os.ReadDir(migrator.Folder)
 	console.ExitIf(err)
 
 	var migrateFiles []MigrationFile
 	for _, f := range files {
 
 		// 去除文件后缀 .go
-		fileName := file.FileNameWithoutExtensiion(f.Name())
+		fileName := file.FileNameWithoutExtension(f.Name())
 
-		// 通过迁移文件的名称获取【MigrationFile】对象
+		// 通过迁移文件的名称获取『MigrationFile』对象
 		mfile := getMigrationFile(fileName)
 
 		// 加个判断，确保迁移文件可用，再放进 migrateFiles 数组中
@@ -110,7 +120,7 @@ func (migrator *Migrator) readAllMigrationFiles() []MigrationFile {
 		}
 	}
 
-	// 返回排序好的 【MigrationFile】数组
+	// 返回排序好的『MigrationFile』数组
 	return migrateFiles
 }
 
@@ -122,12 +132,12 @@ func (migrator *Migrator) runUpMigration(mfile MigrationFile, batch int) {
 		// 友好提示
 		console.Warning("migrating " + mfile.FileName)
 		// 执行 up 方法
-		mfile.Up(database.Db.Migrator(), database.SQLDB)
+		mfile.Up(database.DB.Migrator(), database.SQLDB)
 		// 提示已迁移了哪个文件
 		console.Success("migrated " + mfile.FileName)
 	}
 
 	// 入库
-	err := migrator.DB.Create(&Migration{Migration: mfileNmae, Batch: batch}).Error
+	err := migrator.DB.Create(&Migration{Migration: mfile.FileName, Batch: batch}).Error
 	console.ExitIf(err)
 }
