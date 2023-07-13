@@ -46,7 +46,10 @@ func DeleteAllTables() error {
 	case "mysql":
 		err = deleteMySQLTables()
 	case "sqlite":
-		deleteAllSqliteTables()
+		err := deleteAllSqliteTables()
+		if err != nil {
+			return err
+		}
 	default:
 		panic(errors.New("database connection not support"))
 	}
@@ -54,7 +57,7 @@ func DeleteAllTables() error {
 }
 
 func deleteAllSqliteTables() error {
-	tables := []string{}
+	var tables []string
 
 	// 读取所有数据表
 	err := DB.Select(&tables, "SELECT name FROM sqlite_master WHERE type='table'").Error
@@ -74,7 +77,7 @@ func deleteAllSqliteTables() error {
 
 func deleteMySQLTables() error {
 	dbname := CurrentDatabase()
-	tables := []string{}
+	var tables []string
 
 	// 读取所有数据表
 	err := DB.Table("information_schema.tables").
@@ -101,6 +104,9 @@ func deleteMySQLTables() error {
 
 func TableName(obj interface{}) string {
 	stmt := &gorm.Statement{DB: DB}
-	stmt.Parse(obj)
+	err := stmt.Parse(obj)
+	if err != nil {
+		return ""
+	}
 	return stmt.Schema.Table
 }
